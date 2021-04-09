@@ -59,6 +59,7 @@
     <string name="successfully_added_task_message">Task added</string>
     <string name="no_data_description" />
     <string name="button_delete_task">Delete</string>
+    <string name="button_undo_delete_task">%d - Undo</string>
 
     <!-- Content Descriptions -->
     <string name="tasks_header_image_content_description">Tasks header image</string>

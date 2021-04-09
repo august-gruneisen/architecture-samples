@@ -15,6 +15,7 @@
  */
 package com.example.android.architecture.blueprints.todoapp.tasks
 
+import android.widget.Button
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.lifecycle.LiveData
@@ -35,6 +36,7 @@ import com.example.android.architecture.blueprints.todoapp.data.source.TasksRepo
 import com.example.android.architecture.blueprints.todoapp.tasks.TasksFilterType.ACTIVE_TASKS
 import com.example.android.architecture.blueprints.todoapp.tasks.TasksFilterType.ALL_TASKS
 import com.example.android.architecture.blueprints.todoapp.tasks.TasksFilterType.COMPLETED_TASKS
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
@@ -164,9 +166,16 @@ class TasksViewModel(
         }
     }
 
-    fun deleteTask(taskId: String) = viewModelScope.launch {
+    fun deleteTask(taskId: String, view: Button) = viewModelScope.launch {
+        view.text = view.context.getString(R.string.button_undo_delete_task, 3)
+        delay(1000)
+        view.text = view.context.getString(R.string.button_undo_delete_task, 2)
+        delay(1000)
+        view.text = view.context.getString(R.string.button_undo_delete_task, 1)
+        delay(1000)
         tasksRepository.deleteTask(taskId)
         showSnackbarMessage(R.string.task_deleted)
+        // TODO: include ability to cancel this action if the user clicks "undo"
     }
 
     /**
