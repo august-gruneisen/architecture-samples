@@ -164,6 +164,11 @@ class TasksViewModel(
         }
     }
 
+    fun deleteTask(taskId: String) = viewModelScope.launch {
+        tasksRepository.deleteTask(taskId)
+        showSnackbarMessage(R.string.task_deleted)
+    }
+
     /**
      * Called by the Data Binding library and the FAB's click listener.
      */
