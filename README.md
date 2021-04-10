@@ -1,88 +1,25 @@
-# Android Architecture Blueprints v2
+# "Inline delete" feature
+
+1. Clicking "delete" will show a countdown timer and an undo button
+2. Clicking "undo" will cancel/hide the timer and button
+3. Upon timing out, the item will be deleted
+
+[Download the APK](https://github.com/august-gruneisen/architecture-samples/raw/delete-task-feature/.github/support-files/app-prod-debug.apk) to test.
+
 <p align="center">
-<img src="https://github.com/googlesamples/android-architecture/wiki/images/aab-logov2.png" alt="Illustration by Virginia Poltrack"/>
+  <img src=".github/support-files/deleting-items.gif" width="200" alt="Deleting items"/>
+	<img src=".github/support-files/undo-deleting-items.gif" width="200" alt="Undo deleting items"/>
 </p>
 
-Android Architecture Blueprints is a project to showcase different architectural approaches to developing Android apps. In its different branches you'll find the same app (a TODO app) implemented with small differences.
+Main challenge:
+- Allowing multiple undo timers counting down in parallel
 
-In this branch you'll find:
-*   Kotlin **[Coroutines](https://kotlinlang.org/docs/reference/coroutines-overview.html)** for background operations.
-*   A single-activity architecture, using the **[Navigation component](https://developer.android.com/guide/navigation/navigation-getting-started)** to manage fragment operations.
-*   A presentation layer that contains a fragment (View) and a **ViewModel** per screen (or feature).
-*   Reactive UIs using **LiveData** observables and **Data Binding**.
-*   A **data layer** with a repository and two data sources (local using Room and remote) that are queried with one-shot operations (no listeners or data streams).
-*   Two **product flavors**, `mock` and `prod`, [to ease development and testing](https://android-developers.googleblog.com/2015/12/leveraging-product-flavors-in-android.html) (except in the Dagger branch).
-*   A collection of unit, integration and e2e **tests**, including "shared" tests that can be run on emulator/device or Robolectric.
+Quick fix can be seen with commit [2ea3c59](https://github.com/august-gruneisen/architecture-samples/commit/2ea3c591273cf4a22fe43e8b32356bbfddc0ac52), however holding a reference to the view in the view model is a design smell. This implementation does not hold for configuration changes, as the coroutine will continue to update the text of an obsolete view (since a new view has been created). The user loses the ability to undo, and the item is still deleted after 3 seconds.
 
-## Variations
+More robust solution is shown with commit [9ebb616](https://github.com/august-gruneisen/architecture-samples/commit/9ebb616fb2181647333607fcb0d219337eee154c#diff-849fad0edf950a6d36f71ceb065d260c6c0069923b6c714e1d896591818a3d3e).
 
-This project hosts each sample app in separate repository branches. For more information, see the `README.md` file in each branch.
+__Noteworthy:__ The [TaskDeleter](https://github.com/august-gruneisen/architecture-samples/blob/delete-task-feature/app/src/main/java/com/example/android/architecture/blueprints/todoapp/util/TaskDeleter.kt) class depends only on Kotlin Coroutines and the `Task` type, allowing platform-specific functionality (i.e. deleting tasks from local storage and updating the view layer) to be specified by the caller. Because of this, it would scale well in a multiplatform project using a shared codebase (KMM).
 
-### Stable samples - Kotlin
-|     Sample     | Description |
-| ------------- | ------------- |
-| [master](https://github.com/googlesamples/android-architecture/tree/master) | The base for the rest of the branches. <br/>Uses Kotlin, Architecture Components, coroutines, Data Binding, etc. and uses Room as source of truth, with a reactive UI. |
-| [dagger-android](https://github.com/googlesamples/android-architecture/tree/dagger-android)<br/>[[compare](https://github.com/googlesamples/android-architecture/compare/dagger-android#files_bucket)] | A simple Dagger setup that uses `dagger-android` and removes the two flavors. |
-| [usecases](https://github.com/googlesamples/android-architecture/tree/usecases)<br/>[[compare](https://github.com/googlesamples/android-architecture/compare/usecases#files_bucket)] | Adds a new domain layer that uses UseCases for business logic. |
+__Shortcut:__ Task says "delete" again right before it actually gets deleted due to [TaskDeleter::24](https://github.com/august-gruneisen/architecture-samples/blob/delete-task-feature/app/src/main/java/com/example/android/architecture/blueprints/todoapp/util/TaskDeleter.kt#L24)
 
-### Old samples - Kotlin and Java
-
-Blueprints v1 had a collection of samples that are not maintained anymore, but can still be useful. See [all project branches](https://github.com/googlesamples/android-architecture/branches).
-
-## Why a to-do app?
-
-<img align="right" src="https://github.com/googlesamples/android-architecture/wiki/images/todoapp.gif" alt="A demo illustraating the UI of the app" width="288" height="512" style="display: inline; float: right"/>
-
-The app in this project aims to be simple enough that you can understand it quickly, but complex enough to showcase difficult design decisions and testing scenarios. For more information, see the [app's specification](https://github.com/googlesamples/android-architecture/wiki/To-do-app-specification).
-
-## What is it not?
-
-*   A UI/Material Design sample. The interface of the app is deliberately kept simple to focus on architecture. Check out [Plaid](https://github.com/android/plaid) instead.
-*   A complete Jetpack sample covering all libraries. Check out [Android Sunflower](https://github.com/googlesamples/android-sunflower) or the advanced [Github Browser Sample](https://github.com/googlesamples/android-architecture-components/tree/master/GithubBrowserSample) instead.
-*   A real production app with network access, user authentication, etc. Check out the [Google I/O app](https://github.com/google/iosched), [Santa Tracker](https://github.com/google/santa-tracker-android) or [Tivi](https://github.com/chrisbanes/tivi) for that.
-
-## Who is it for?
-
-*   Intermediate developers and beginners looking for a way to structure their app in a testable and maintainable way.
-*   Advanced developers looking for quick reference.
-
-## Opening a sample in Android Studio
-
-To open one of the samples in Android Studio, begin by checking out one of the sample branches, and then open the root directory in Android Studio. The following series of steps illustrate how to open the [usecases](tree/usecases/) sample.
-
-Clone the repository:
-
-```
-git clone git@github.com:googlesamples/android-architecture.git
-```
-This step checks out the master branch. If you want to change to a different sample: 
-
-```
-git checkout usecases
-```
-
-**Note:** To review a different sample, replace `usecases` with the name of sample you want to check out.
-
-Finally open the `android-architecture/` directory in Android Studio.
-
-### License
-
-
-```
-Copyright 2019 Google, Inc.
-
-Licensed to the Apache Software Foundation (ASF) under one or more contributor
-license agreements. See the NOTICE file distributed with this work for
-additional information regarding copyright ownership. The ASF licenses this
-file to you under the Apache License, Version 2.0 (the "License"); you may not
-use this file except in compliance with the License. You may obtain a copy of
-the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-License for the specific language governing permissions and limitations under
-the License.
-```
+__Optimization:__ Use adapter position to determine which list item to update [here](https://github.com/august-gruneisen/architecture-samples/blob/delete-task-feature/app/src/main/java/com/example/android/architecture/blueprints/todoapp/tasks/TasksFragment.kt#L167)
