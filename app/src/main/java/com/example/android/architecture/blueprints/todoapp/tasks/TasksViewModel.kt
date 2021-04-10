@@ -15,7 +15,6 @@
  */
 package com.example.android.architecture.blueprints.todoapp.tasks
 
-import android.widget.Button
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.lifecycle.LiveData
@@ -33,10 +32,10 @@ import com.example.android.architecture.blueprints.todoapp.data.Result.Success
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.source.TasksDataSource
 import com.example.android.architecture.blueprints.todoapp.data.source.TasksRepository
+import com.example.android.architecture.blueprints.todoapp.util.TaskDeleter
 import com.example.android.architecture.blueprints.todoapp.tasks.TasksFilterType.ACTIVE_TASKS
 import com.example.android.architecture.blueprints.todoapp.tasks.TasksFilterType.ALL_TASKS
 import com.example.android.architecture.blueprints.todoapp.tasks.TasksFilterType.COMPLETED_TASKS
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
@@ -88,6 +87,9 @@ class TasksViewModel(
 
     private val _newTaskEvent = MutableLiveData<Event<Unit>>()
     val newTaskEvent: LiveData<Event<Unit>> = _newTaskEvent
+
+    private val _deletingTaskEvent = MutableLiveData<Event<Boolean>>()
+    val deletingTaskEvent: LiveData<Event<Boolean>> = _deletingTaskEvent
 
     private var resultMessageShown: Boolean = false
 
@@ -166,16 +168,33 @@ class TasksViewModel(
         }
     }
 
-    fun deleteTask(taskId: String, view: Button) = viewModelScope.launch {
-        view.text = view.context.getString(R.string.button_undo_delete_task, 3)
-        delay(1000)
-        view.text = view.context.getString(R.string.button_undo_delete_task, 2)
-        delay(1000)
-        view.text = view.context.getString(R.string.button_undo_delete_task, 1)
-        delay(1000)
-        tasksRepository.deleteTask(taskId)
-        showSnackbarMessage(R.string.task_deleted)
-        // TODO: include ability to cancel this action if the user clicks "undo"
+    private val taskDeleter = TaskDeleter()
+
+    fun deleteTask(task: Task, undoClicked: Boolean) {
+        if (undoClicked) {
+            taskDeleter.undoTaskDeletion(task)
+        } else {
+            taskDeleter.scheduleTaskForDeletion(
+                    task = task,
+                    scope = viewModelScope,
+                    progressUpdate = {
+                        _deletingTaskEvent.postValue(Event(true))
+                    },
+                    onTimesUp = {
+                        viewModelScope.launch {
+                            tasksRepository.deleteTask(task.id)
+                            showSnackbarMessage(R.string.task_deleted)
+                        }
+                    }
+            )
+        }
+    }
+
+    /**
+     * Called by Data Binding.
+     */
+    fun getDeletionStatus(task: Task): String {
+        return taskDeleter.getDeletionStatus(task.id)
     }
 
     /**

@@ -162,5 +162,9 @@ class TasksFragment : Fragment() {
         } else {
             Timber.w("ViewModel not initialized when attempting to set up adapter.")
         }
+
+        this.viewModel.deletingTaskEvent.observe(this, EventObserver {
+            listAdapter.notifyDataSetChanged()
+        })
     }
 }
