@@ -67,6 +67,7 @@
             style="@android:style/Widget.DeviceDefault.Button.Borderless"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor='@{deleteButton.text != "Delete" ? @color/colorRed : @color/colorGrey}'
             android:layout_gravity="center_vertical"
             android:onClick='@{(view) -> viewmodel.deleteTask(task, ((Button)view).text != "Delete")}'
             android:text="@{viewmodel.getDeletionStatus(task)}" />
