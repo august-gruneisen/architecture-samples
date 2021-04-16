@@ -1,4 +1,4 @@
-package com.example.android.architecture.blueprints.todoapp.util
+package com.example.android.architecture.blueprints.todoapp
 
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import kotlinx.coroutines.*

@@ -1,9 +1,8 @@
-package com.example.android.architecture.blueprints.todoapp.util
+package com.example.android.architecture.blueprints.todoapp
 
-import com.example.android.architecture.blueprints.todoapp.MainCoroutineRule
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
