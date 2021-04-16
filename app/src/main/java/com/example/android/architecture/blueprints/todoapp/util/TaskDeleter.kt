@@ -33,7 +33,7 @@ class TaskDeleter {
      * @param onTimesUp TIMES UP! Item is ready to be deleted
      */
     fun scheduleTaskForDeletion(task: Task, scope: CoroutineScope, progressUpdate: () -> Unit, onTimesUp: () -> Unit) {
-        scheduledDeletions[task.id] = scope.launch(Dispatchers.Default) {
+        scheduledDeletions[task.id] = scope.launch {
             try {
                 timeRemainingToUndo[task.id] = secondsToUndoDeletion
                 progressUpdate()
