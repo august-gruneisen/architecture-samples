@@ -1,25 +1,21 @@
-# "Inline delete" feature
+# Inline delete w/ undo (added feature)
 
-1. Clicking "delete" will show a countdown timer and an undo button
-2. Clicking "undo" will cancel/hide the timer and button
-3. Upon timing out, the item will be deleted
+Delete items from a list, allowing the user to "undo" within 3 seconds (using Coroutines).
 
 [Download the APK](https://github.com/august-gruneisen/architecture-samples/raw/delete-task-feature/.github/support-files/app-prod-debug.apk) to test.
+
+See [core logic](https://github.com/august-gruneisen/architecture-samples/blob/67b760c2bb6a34bfe5a050b6e29ad20850db8c54/app/src/main/java/com/example/android/architecture/blueprints/todoapp/TaskDeleter.kt)  and [unit tests](https://github.com/august-gruneisen/architecture-samples/blob/67b760c2bb6a34bfe5a050b6e29ad20850db8c54/app/src/test/java/com/example/android/architecture/blueprints/todoapp/TaskDeleterTest.kt).
 
 <p align="center">
   <img src=".github/support-files/deleting-items.gif" width="200" alt="Deleting items"/>
 	<img src=".github/support-files/undo-deleting-items.gif" width="200" alt="Undo deleting items"/>
 </p>
 
-Main challenge:
-- Allowing multiple undo timers counting down in parallel
+### Highlights:
+1. Survives configuration changes
+2. Doesn't block the main thread
+3. Supports any number of concurrent deletions
+4. Logic is encapsulated to simplify the view model
+5. Unit tested
 
-Quick fix can be seen with commit [2ea3c59](https://github.com/august-gruneisen/architecture-samples/commit/2ea3c591273cf4a22fe43e8b32356bbfddc0ac52), however holding a reference to the view in the view model is a design smell. This implementation does not hold for configuration changes, as the coroutine will continue to update the text of an obsolete view (since a new view has been created). The user loses the ability to undo, and the item is still deleted after 3 seconds.
-
-More robust solution is shown with commit [9ebb616](https://github.com/august-gruneisen/architecture-samples/commit/9ebb616fb2181647333607fcb0d219337eee154c#diff-849fad0edf950a6d36f71ceb065d260c6c0069923b6c714e1d896591818a3d3e).
-
-__Noteworthy:__ The [TaskDeleter](https://github.com/august-gruneisen/architecture-samples/blob/delete-task-feature/app/src/main/java/com/example/android/architecture/blueprints/todoapp/util/TaskDeleter.kt) class depends only on Kotlin Coroutines and the `Task` type, allowing platform-specific functionality (i.e. deleting tasks from local storage and updating the view layer) to be specified by the caller. Because of this, it would scale well in a multiplatform project using a shared codebase (KMM).
-
-__Shortcut:__ Task says "delete" again right before it actually gets deleted due to [TaskDeleter::24](https://github.com/august-gruneisen/architecture-samples/blob/delete-task-feature/app/src/main/java/com/example/android/architecture/blueprints/todoapp/util/TaskDeleter.kt#L24)
-
-__Optimization:__ Use adapter position to determine which list item to update [here](https://github.com/august-gruneisen/architecture-samples/blob/delete-task-feature/app/src/main/java/com/example/android/architecture/blueprints/todoapp/tasks/TasksFragment.kt#L167)
+__Noteworthy:__ The `TaskDeleter` class allows platform-specific behavior (i.e. updating local storage, updating the view layer) to be passed in as [parameters](https://github.com/august-gruneisen/architecture-samples/blob/67b760c2bb6a34bfe5a050b6e29ad20850db8c54/app/src/main/java/com/example/android/architecture/blueprints/todoapp/TaskDeleter.kt#L35). Because of this, it would scale well to a multiplatform project with a shared codebase (KMM).
